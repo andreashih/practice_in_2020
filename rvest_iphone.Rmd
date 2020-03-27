@@ -1,0 +1,113 @@
+---
+title: "rvest_iphone"
+author: "andrea"
+date: "2020/3/27"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+原本想試用 `rtweet` 搭配 `quanteda` 的日文斷詞功能整理 [twitter 上的武漢肺炎日文資料](https://andreashih.github.io/blog/journal/rtweet-quanteda.html)，但遲遲無法解決在 RStudio 上可以執行但不能輸出成 `.md` 檔的問題，因此先暫緩，回去複習一下 `rvest` 。剛好搭上 2020 新 iPhone 的潮流，決定來爬看看 Mobile01 iPhone 版上的資料。 
+
+### 1. 先爬一頁看看
+
+```{r}
+library(rvest)
+library(dplyr)
+
+mobile_iphone <- xml2::read_html("https://www.mobile01.com/topiclist.php?f=383")
+
+content <- mobile_iphone %>%
+  html_nodes(".u-ellipsis") %>%
+  html_text()
+```
+
+偶然發現一個好用的 [Chrome 外掛](https://selectorgadget.com/)
+
+
+把標題、po 文者、回覆者資訊抓出來
+```{r}
+title <- content[seq(1, 93, by = 3)]
+post_id <- content[seq(2, 93, by = 3)]
+reply_id <- content[seq(3, 93, by = 3)]
+```
+
+### 2. 爬第二頁看看
+
+```{r}
+mobile_iphone2 <- xml2::read_html("https://www.mobile01.com/topiclist.php?f=383&p=2")
+
+content2 <- mobile_iphone2 %>%
+  html_nodes(".u-ellipsis") %>%
+  html_text()
+
+title2 <- content2[seq(1, 93, by = 3)]
+post_id2 <- content2[seq(2, 93, by = 3)]
+reply_id2 <- content2[seq(3, 93, by = 3)]
+```
+
+### 3. 寫個 for loop 爬前十頁
+
+```{r}
+#http://r3dmaotech.blogspot.com/2016/05/r-rvest.html  
+links = c("https://www.mobile01.com/topiclist.php?f=383",
+          "https://www.mobile01.com/topiclist.php?f=383&p=2",
+          "https://www.mobile01.com/topiclist.php?f=383&p=3",
+          "https://www.mobile01.com/topiclist.php?f=383&p=4",
+          "https://www.mobile01.com/topiclist.php?f=383&p=5",
+          "https://www.mobile01.com/topiclist.php?f=383&p=6",
+          "https://www.mobile01.com/topiclist.php?f=383&p=7",
+          "https://www.mobile01.com/topiclist.php?f=383&p=8",
+          "https://www.mobile01.com/topiclist.php?f=383&p=9",
+          "https://www.mobile01.com/topiclist.php?f=383&p=10")
+data = c()
+for(i in 1:length(links)){
+  url = links[i]
+  content_css = read_html(url) %>% html_nodes(".u-ellipsis") %>% html_text()
+  temp <- iconv(content_css,'utf8')
+  data = c(data,temp)
+  ##sleep time
+  Sys.sleep(runif(1,2,4))
+}
+title3 = data[seq(1, length(data), by = 3)]
+post_id3 = data[seq(2, length(data), by = 3)]
+reply_id3 = data[seq(3, length(data), by = 3)]
+title3
+```
+
+### 4. `jiebaR` 斷詞
+
+```{r}
+library(jiebaR)
+
+# Data: 3 篇文章
+#docs <- title3
+
+# Initialize jiebaR
+seg <- worker()
+
+docs_segged <- rep("", 3)
+for (i in seq_along(title3)) {
+  # Segment each element in docs
+  segged <- segment(title3[i], seg)
+
+  # Collapse the character vector into a string, separated by space
+  docs_segged[i] <- paste0(segged, collapse = " ")
+}
+
+docs_segged
+```
+
+### 建立 dataframe
+
+```{r}
+docs_df <- tibble::tibble(
+  doc_id = seq_along(docs_segged),
+  content = docs_segged
+)
+
+knitr::kable(docs_df, align = "c")
+docs_df
+```
