@@ -18,12 +18,12 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r}
 #http://r3dmaotech.blogspot.com/2016/05/r-rvest.html  
 links <- paste0("https://www.mobile01.com/topiclist.php?f=383&p=", 1:30)
-data <- c()
+data = c()
 for(i in 1:length(links)){
   url <- links[i]
   content <- read_html(url) %>% html_nodes(".u-ellipsis") %>% html_text()
-  temp <- iconv(content,'utf8')
-  data <- c(data, temp)
+  temp = iconv(content,'utf8')
+  data = c(data, temp)
   ##sleep time
   Sys.sleep(runif(1, 2, 4))
 }
