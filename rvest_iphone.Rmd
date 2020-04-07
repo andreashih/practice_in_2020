@@ -2,7 +2,7 @@
 title: "rvest_iphone"
 author: "andrea"
 date: "2020/3/27"
-output: html_document
+output: md_document
 ---
 
 ```{r setup, include=FALSE}
@@ -10,8 +10,14 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 原本想試用 `rtweet` 搭配 `quanteda` 的日文斷詞功能整理 [twitter 上的武漢肺炎日文資料](https://andreashih.github.io/blog/journal/rtweet-quanteda.html)，但遲遲無法解決在 RStudio 上可以執行但不能輸出成 `.md` 檔的問題，因此先暫緩，回去複習一下 `rvest` 。剛好搭上 2020 新 iPhone 的潮流，決定來爬看看 Mobile01 上 iPhone 版的資料。 
-偶然發現一個好用的 [Chrome 外掛](https://selectorgadget.com/)
 
+
+偶然發現一個好用的 [Chrome 外掛](https://selectorgadget.com/) 可以抓 CSS selector
+
+```{r}
+library(rvest)
+library(dplyr)
+```
 
 ### 1. 先把資料爬下來
 
@@ -24,7 +30,7 @@ for(i in 1:length(links)){
   content <- read_html(url) %>% html_nodes(".u-ellipsis") %>% html_text()
   temp = iconv(content,'utf8')
   data = c(data, temp)
-  ##sleep time
+  ##sleep time  
   Sys.sleep(runif(1, 2, 4))
 }
 title <- data[seq(1, length(data), by = 3)]
