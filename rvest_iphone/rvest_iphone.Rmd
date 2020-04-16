@@ -110,7 +110,7 @@ df
 ```{r}
 library(ggplot2)
 
-ggplot(df, aes(x = reorder(Model, -n), y = n), fill = dose) +
+ggplot(df, aes(x = reorder(Model, -n), y = n)) +
   geom_bar(stat = "identity",
            fill = "#fcba03") +
   xlab("Model") +
@@ -120,7 +120,7 @@ ggplot(df, aes(x = reorder(Model, -n), y = n), fill = dose) +
 ```{r}
 require(ggrepel)
 
-ggplot(df, aes(x = n, y = Order, label = Model)) +
+ggplot(df, aes(x = Order, y = n, label = Model)) +
   geom_point(aes(color = factor(Model))) +
   theme_bw() +
   geom_text_repel() +

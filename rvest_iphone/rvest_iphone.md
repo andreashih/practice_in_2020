@@ -106,13 +106,13 @@ RStudio 上可以執行卻不能輸出成 `.md` 檔的問題，因此決定先�
 
     library(ggplot2)
 
-    ggplot(df, aes(x = reorder(Model, -n), y = n), fill = dose) +
+    ggplot(df, aes(x = reorder(Model, -n), y = n)) +
       geom_bar(stat = "identity",
                fill = "#fcba03") +
       xlab("Model") +
       theme(axis.text.x=element_text(angle=45, hjust=1))
 
-![](https://andreashih.github.io/img/rmd_posts/rvest_iphone_files/figure-markdown_strict/unnamed-chunk-6-1.png)
+![](rvest_iphone_files/figure-markdown_strict/unnamed-chunk-6-1.png)
 
     require(ggrepel)
 
@@ -120,13 +120,13 @@ RStudio 上可以執行卻不能輸出成 `.md` 檔的問題，因此決定先�
 
     ## Warning: package 'ggrepel' was built under R version 3.6.3
 
-    ggplot(df, aes(x = n, y = Order, label = Model)) +
+    ggplot(df, aes(x = Order, y = n, label = Model)) +
       geom_point(aes(color = factor(Model))) +
       theme_bw() +
       geom_text_repel() +
       theme(legend.position = "none")
 
-![](https://andreashih.github.io/img/rmd_posts/rvest_iphone_files/figure-markdown_strict/unnamed-chunk-7-1.png)
+![](rvest_iphone_files/figure-markdown_strict/unnamed-chunk-7-1.png)
 
 ### 6. Explanation
 
