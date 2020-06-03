@@ -1,0 +1,131 @@
+---
+title: "causative"
+author: "andrea"
+date: "2020/5/21"
+output: md_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+*How to do Linguistics with R*
+
+Explain and predict the speaker's choice between two or more near synonyms or variants.
+
+Two possible outcomes: the logistic model is called **binominal** or **dichotomous**.
+
+Three or more outcomes: **multinominal** or **polytomous** regression.
+
+may vs. might
+gown vs. dress
+
+Dutch causative constructions with *doen* 'do' and *laten* 'let'.
+
+Complex causative events involve the causing event, the effected event, the Causer and the Causee.
+
+Four types of causation:
+- inducive: a mental Causer acts upon a mental Causee
+- volitional: a mental Causer acts upon a non-mental Causee
+- affective: a non-mental Causer acts upon a mental Causee
+- physical: a non-mental Causer acts upon a non-mental Causee
+
+i prefers laten
+a and p prefers doen
+
+geographic factor (p256)
+
+```{r}
+# install.packages(c("rms", "visreg", "car"))
+# install.packages(pkgs = file.choose(), repos = NULL, type = "source")
+library(Rling)
+library(rms)
+library(visreg)
+library(car)
+```
+
+```{r}
+data(doenLaten)
+head(doenLaten)
+str(doenLaten)
+summary(doenLaten$Aux)
+```
+```{r}
+m.lrm <- lrm(Aux ~ Causation + EPTrans + Country, data = doenLaten)
+
+m.lrm
+```
+
+
+
+```{r}
+levels(doenLaten$Aux)
+
+m.glm <- glm(Aux ~ Causation + EPTrans + Country, data = doenLaten, family = binomial)
+
+confint(m.glm)
+```
+exp(confint(m.glm))
+
+exp(2.5716)
+
+exp(2.5716)/(1 + exp(2.5716))
+
+log(0.9290113/(1 - 0.9290113))
+
+predict(m.lrm, type = "fitted")[27]
+
+m0.glm <- glm(Aux ~ 1, data = doenLaten, family = binomial)
+
+m.fw <- step(m0.glm, direction = "forward", scope = ~ Causation + EPTrans + Country)
+
+m.bw <- step(m.glm, direction = "backward")
+
+m.glm1 <- glm(Aux ~ EPTrans + Country, data = doenLaten, family = binomial)
+
+anova(m.glm1, m.glm, test = "Chisq")
+
+drop1(m.glm, test = "Chisq")
+
+m.glm.int <- glm(Aux ~ Causation + EPTrans*Country, data = doenLaten, family = binomial)
+
+anova(m.glm, m.glm.int, test = "Chisq")
+
+summary(m.glm.int)
+
+visreg(m.glm.int, "EPTrans", by = "Country")
+
+doenLaten[c(142, 356, 358, 381),]
+
+rms::vif(m.lrm)
+
+m.test <- lrm(Aux~Causation + EPTrans + EPTrans1 + Country, data = doenLaten)
+
+m.test
+
+rms::vif(m.test)
+
+m.lrm1 <- lrm(Aux ~ Causation + EPTrans + Country, data = doenLaten, x = T, y = T)
+
+validate(m.lrm1, B = 200)
+
+s <- sample(455, 100)
+
+d.small <- doenLaten[s,]
+
+m.lrm1.small <- lrm(Aux ~ Causation + EPTrans + Country, data = d.small, x = T, y = T)
+
+validate(m.lrm1.small, B = 200)
+
+influencePlot(m.glm, id.method = "identify")
+
+
+##Boxes with additional information
+
+table(doenLaten$Aux, doenLaten$Country)
+
+m.Country <- lrm(Aux ~ Country, data = doenLaten)
+
+m.Country
+
+exp(0.7528)
