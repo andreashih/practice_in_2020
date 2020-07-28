@@ -1,6 +1,9 @@
 library(readr)
 library(stringr)
-library(dplyr)
+library(tidyverse)
+library(Rling); library(rms); library(visreg); library(car)
+
+# Clean up the dataset from sketch engine
 
 concord_shi <- read_csv("causation_sketch_engine_shi.csv")
 
@@ -19,25 +22,47 @@ write_csv(concord_shi2, "C:\\Users\\user\\Desktop\\practice_in_2020\\concord_shi
 
 write_csv(concord_rang2, "C:\\Users\\user\\Desktop\\practice_in_2020\\concord_rang.csv")
 
+# Merge the four datasets
 
-concord_rang %>%
-  filter(str_detect(X2, "^[，。][^(，|。)]+/N[^(，|。)]+$")) -> a
+rang_cht <- read_csv("rang_cht.csv")
+shi_cht <- read_csv("shi_cht.csv")
+rang_chs <- read_csv("rang_chs.csv")
+shi_chs <- read_csv("shi_chs.csv")
 
-head(str_extract(concord_rang$X2, "(?<=(/NN|/NR))[^(/N)]+(?=(/NN|/NR))"))
-head(str_extract(concord_rang$X4, "(?<=(/NN|/NR))[^(/N)]+(?=(/NN|/NR))"))
-concord_rang$X2[1]
+shi_chs <- head(shi_chs, 201)
+
+rang_chs <- head(rang_chs, 201)
+
+causation_chs <- rbind(shi_chs, rang_chs) %>%
+  filter(MentalS %in% c(1, 0)) %>%
+  select(ResuPred, Property, Transitivity, Varieties)
+
+shi_cht <- head(shi_cht, 201) %>%
+  mutate(ResuPred = "shi")
+
+rang_cht <- head(rang_cht, 201)
+
+causation_cht <- rbind(shi_cht, rang_cht) %>%
+  filter(MentalS %in% c(1, 0)) %>%
+  select(ResuPred, Property, Transitivity, Varieties)
+
+causation_all <- rbind(causation_chs, causation_cht) 
+causation_all <- na.omit(causation_all)
+
+write_csv(causation_all, "C:\\Users\\user\\Desktop\\practice_in_2020\\causation_all.csv")
+
+###############################
+library(mgcv)
+
+causation <- read_csv("C:/Users/user/Desktop/practice_in_2020/causation_all.csv")
+
+causation$ResuPred <- factor(causation$ResuPred)
+causation$Property <- factor(causation$Property)
+causation$Transitivity <- factor(causation$Transitivity)
+causation$Varieties <- factor(causation$Varieties)
+
+mod_lm <- gam(Property ~ Varieties, data = causation)
+summary(mod_lm)
 
 
-get_actor <- function(left_context, actor_pat) {
-  left_context = stringr::str_split(left_context, " +")
-  left_context = left_context[[1]]
-  
-  left_context_rev = rev(left_context)
-  for (i in seq_along(left_context_rev)) {
-    if (str_detect(left_context_rev[i], "/N[NR]")) 
-      break
-  }
-}
-
-get_actor(concord_rang$X2, "(?<=(/NN|/NR))[^(/N)]+(?=(/NN|/NR))")
 

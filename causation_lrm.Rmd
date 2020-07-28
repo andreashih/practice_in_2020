@@ -1,0 +1,60 @@
+---
+title: "Causation_LRM_new"
+author: "andrea"
+date: "2020/7/27"
+output: html_document
+---
+
+```{r}
+library(readr)
+library(stringr)
+library(tidyverse)
+library(Rling); library(rms); library(visreg); library(car)
+```
+
+```{r message=FALSE, warning=FALSE}
+causation <- read_csv('causation_all.csv')
+
+table(causation$ResuPred, causation$Varieties)
+
+causation$ResuPred <- factor(causation$ResuPred)
+causation$Property <- factor(causation$Property)
+causation$Transitivity <- factor(causation$Transitivity)
+causation$Varieties <- factor(causation$Varieties)
+
+# logistic regression model
+m.lrm <- lrm(ResuPred ~ Property + Transitivity + Varieties, data = causation)
+m.lrm
+```
+
+```{r}
+# logistic model
+m.glm <- glm(ResuPred ~ Property + Transitivity + Varieties, data = causation, 
+             family = binomial)
+
+confint(m.glm)
+```
+
+```{r}
+# selection of variables
+drop1(m.glm, test = "Chisq")
+```
+
+```{r}
+# testing possible interactions
+
+m.glm.int <- glm(ResuPred ~ Property + Transitivity * Varieties, data = causation, 
+                 family = binomial)
+
+anova(m.glm, m.glm.int, test = "Chisq")
+```
+
+```{r}
+# visualization
+visreg (m.glm.int, "Transitivity", by = "Varieties")
+```
+
+```{r}
+# identifying outliers
+influencePlot (m.glm, id.method = "identify")
+```
