@@ -5,7 +5,7 @@ date: "2020/7/27"
 output: html_document
 ---
 
-```{r}
+```{r message=FALSE, warning=FALSE}
 library(readr)
 library(stringr)
 library(tidyverse)
@@ -28,33 +28,26 @@ m.lrm
 ```
 
 ```{r}
-# logistic model
-m.glm <- glm(ResuPred ~ Property + Transitivity + Varieties, data = causation, 
-             family = binomial)
-
-confint(m.glm)
+rms::vif(m.lrm)
 ```
 
 ```{r}
-# selection of variables
-drop1(m.glm, test = "Chisq")
+causindex <- which(causation$Transitivity == 'TR')
+deleteindex <- sample(causindex, length(causindex) - 3)
+causation[-deleteindex, ]
 ```
 
 ```{r}
-# testing possible interactions
+m.lrm1 <- lrm(ResuPred ~ Property + Transitivity + Varieties, data = causation, 
+              x = T, y = T)
 
-m.glm.int <- glm(ResuPred ~ Property + Transitivity * Varieties, data = causation, 
-                 family = binomial)
-
-anova(m.glm, m.glm.int, test = "Chisq")
+validate(m.lrm1, B = 200)
 ```
 
 ```{r}
-# visualization
-visreg (m.glm.int, "Transitivity", by = "Varieties")
-```
-
-```{r}
-# identifying outliers
-influencePlot (m.glm, id.method = "identify")
+s <- sample(455, 100)
+d.small <- causation[s, ]
+m.lrm1.small <- lrm(ResuPred ~ Property + Transitivity + Varieties, data = d.small, 
+                    x = T, y = T)
+validate(m.lrm1.small, B = 200)
 ```

@@ -61,8 +61,26 @@ causation$Property <- factor(causation$Property)
 causation$Transitivity <- factor(causation$Transitivity)
 causation$Varieties <- factor(causation$Varieties)
 
-mod_lm <- gam(Property ~ Varieties, data = causation)
-summary(mod_lm)
+m.lrm <- lrm(ResuPred ~ Property + Transitivity + Varieties, data = causation)
 
+rms::vif(m.lrm)
 
+m.test()
 
+m.lrm1 <- lrm(ResuPred ~ Property + Transitivity + Varieties, data = causation, 
+              x = T, y = T)
+
+validate(m.lrm1, B = 200)
+
+s <- sample(455, 100)
+d.small <- causation[s, ]
+m.lrm1.small <- lrm(ResuPred ~ Property + Transitivity + Varieties, data = d.small, 
+                    x = T, y = T)
+validate(m.lrm1.small, B = 200)
+
+##########
+
+causation_sample <- causation %>% sample_frac(.8)
+
+m.lrm <- lrm(ResuPred ~ Property + Transitivity + Varieties, data = causation_sample)
+m.lrm
