@@ -4,7 +4,7 @@
 
 ## load the zipfR package
 library(zipfR)
-
+##tr
 ## The easiest and most flexible way to read your own data is in the form of 
 ## token vector in "vertical" (one token per line) format. R easily handles
 ## samples of several million tokens. For larger data sets, it may be necessary
